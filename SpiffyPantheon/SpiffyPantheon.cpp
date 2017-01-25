@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "PluginSDK.h"
+#include <math.h>
 #include <sstream>
 
 PluginSetup("SpiffyPantheon - xSlapppz");
@@ -147,6 +148,38 @@ void Farm()
 	}
 }
 
+void Auto()
+{
+	if (GEntityList->Player()->ManaPercent() >= HarassMana->GetInteger() && AutoQ->Enabled() && GOrbwalking->GetOrbwalkingMode() == kModeNone)
+	{
+		Q->CastOnTarget(GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, Q->Range()));
+	}
+}
+
+float GetDistance(IUnit* Source, IUnit* Target)
+{
+	double X1 = Source->GetPosition().x;
+	double X2 = Target->GetPosition().x;
+	double Y1 = Source->GetPosition().y;
+	double Y2 = Target->GetPosition().y;
+	double Z1 = Source->GetPosition().z;
+	double Z2 = Target->GetPosition().z;
+	double D = sqrt(pow(X2 - X1, 2) + pow(Y2 - Y1, 2) + pow(Z2 - Z1, 2));
+	return (float)D;
+}
+
+IUnit* GetTarget(IUnit* Source, float range)
+{
+	auto enemies = GEntityList->GetAllHeros(false, true);
+	for (auto enemy : enemies)
+	{
+		if (GetDistance(Source, enemy) <= range) {
+			return enemy;
+		}
+	}
+	return nullptr;
+}
+
 //Game Events and Tick
 PLUGIN_EVENT(void) OnGameUpdate()
 {
@@ -158,14 +191,11 @@ PLUGIN_EVENT(void) OnGameUpdate()
 	{
 		Harass();
 	}
-	if (GEntityList->Player()->ManaPercent() >= HarassMana->GetInteger() && AutoQ->Enabled() && GOrbwalking->GetOrbwalkingMode() == kModeNone)
-	{
-		Q->CastOnTarget(GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, Q->Range()));
-	}
 	if (GOrbwalking->GetOrbwalkingMode() == kModeLaneClear || GOrbwalking->GetOrbwalkingMode() == kModeLastHit)
 	{
 		Farm();
 	}
+	Auto();
 	if (ChangeSkin->Enabled()) 
 	{
 		GEntityList->Player()->SetSkinId(SkinSelector->GetInteger());
@@ -184,6 +214,14 @@ PLUGIN_EVENT(void) OnRender()
 	}
 }
 
+PLUGIN_EVENT(void) OnOrbwalkAfterAttack(IUnit* Source, IUnit* Target)
+{
+	if (W->IsReady()) {
+		W->CastOnPlayer();
+	}
+
+}
+
 PLUGIN_API void OnLoad(IPluginSDK* PluginSDK)
 {
 	// Initializes global interfaces for core access
@@ -193,6 +231,7 @@ PLUGIN_API void OnLoad(IPluginSDK* PluginSDK)
 
 	GEventManager->AddEventHandler(kEventOnGameUpdate, OnGameUpdate);
 	GEventManager->AddEventHandler(kEventOnRender, OnRender);
+	GEventManager->AddEventHandler(kEventOrbwalkAfterAttack, OnOrbwalkAfterAttack);
 }
 
 // Called when plugin is unloaded
@@ -202,4 +241,5 @@ PLUGIN_API void OnUnload()
 
 	GEventManager->RemoveEventHandler(kEventOnGameUpdate, OnGameUpdate);
 	GEventManager->RemoveEventHandler(kEventOnRender, OnRender);
+	GEventManager->AddEventHandler(kEventOrbwalkAfterAttack, OnOrbwalkAfterAttack);
 }
