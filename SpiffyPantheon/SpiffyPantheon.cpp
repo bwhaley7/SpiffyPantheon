@@ -96,15 +96,18 @@ void Combo()
 {
 	if (ComboQ->Enabled()) 
 	{
-		Q->CastOnTarget(GTargetSelector->FindTarget(QuickestKill,PhysicalDamage,Q->Range()));
+		auto target = GTargetSelector->FindTarget(QuickestKill, SpellDamage, Q->Range());
+		Q->CastOnTarget(target);
 	}
 	if (ComboW->Enabled())
 	{
-		W->CastOnTarget(GTargetSelector->FindTarget(QuickestKill, SpellDamage, W->Range()));
+		auto target = GTargetSelector->FindTarget(QuickestKill, SpellDamage, W->Range());
+		W->CastOnTarget(target);
 	}
-	if (ComboE->Enabled())
+	if (ComboE->Enabled() && GEntityList->Player()->GetSpellRemainingCooldown(kSlotW) > 0)
 	{
-		E->CastOnTarget(GTargetSelector->FindTarget(QuickestKill, PhysicalDamage, (float)ComboERange->GetInteger()));
+		auto target = GTargetSelector->FindTarget(QuickestKill, SpellDamage, (float)ComboERange->GetInteger());
+		E->CastOnTarget(target);
 	}
 	if (ComboR->Enabled())
 	{
