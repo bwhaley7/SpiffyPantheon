@@ -185,12 +185,14 @@ enum eLeagueEvents
 	kEventOnRenderBehindHud,
 	kEventOnWndProc,
 	kEventOnEnterVisible,
-	kEventOnExitVisible
+	kEventOnExitVisible,
+	kEventOnUpdateChargedSpell,
+	kEventOnPlayAnimation
 };
 
 enum eTargetPriority
 {
-	QuickestKill,				/* Prioritize the quickest kill based on damage type */
+	QuickestKill,			/* Prioritize the quickest kill based on damage type */
 	ClosestPriority,			/* Prioritize based on distance */
 	ClosestToCursorPriority,	/* Prioritize based on distance from cursor */
 	LowestHealthPriority		/* Prioritize based on lowest health */
